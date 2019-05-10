@@ -167,12 +167,115 @@ exitError (Error msg) = return (VErr msg)
 --------------------------------------------------------------------------------
 eval :: Env -> Expr -> Value
 --------------------------------------------------------------------------------
-eval = error "TBD:eval"
+--eval = error "TBD:eval"
+eval env (EInt int) = (VInt int)
+eval env (EBool bool) = (VBool bool) 
+eval env (ENil) = (VNil)
+eval env (EVar id) = (lookupId id env)
+
+eval env (EBin Plus expr1 expr2) = evalOp Plus (eval env expr1) (eval env expr2)
+eval env (EBin Minus expr1 expr2) = evalOp Minus (eval env expr1) (eval env expr2)
+eval env (EBin Mul expr1 expr2) = evalOp Mul (eval env expr1) (eval env expr2)
+eval env (EBin Div expr1 expr2) = evalOp Div (eval env expr1) (eval env expr2)
+eval env (EBin Eq expr1 expr2) = evalOp Eq (eval env expr1) (eval env expr2)
+eval env (EBin Ne expr1 expr2) = evalOp Ne (eval env expr1) (eval env expr2)
+eval env (EBin Lt expr1 expr2) = evalOp Lt (eval env expr1) (eval env expr2)
+eval env (EBin Le expr1 expr2) = evalOp Le (eval env expr1) (eval env expr2)
+eval env (EBin And expr1 expr2) = evalOp And (eval env expr1) (eval env expr2)
+eval env (EBin Or expr1 expr2) = evalOp Or (eval env expr1) (eval env expr2)
+eval env (EBin Cons expr1 expr2) = evalOp Cons (eval env expr1) (eval env expr2)
+
+eval env (EIf expr1 expr2 expr3) = if cond then (eval env expr2) else (eval env expr3)
+    where 
+      VBool cond = (eval env expr1)
+eval env (ELet id expr1 expr2) = (eval [(id, (eval env expr1))] expr2) --need more items only one item orginal enviorment is correct then the recurrsive enviormente 
+--eval env (EApp expr1 expr2) = f value1 value2
+--    where
+--      value1 = eval env expr1
+--      value2 = eval env expr2
+--      f = case op of
+
+--eval env (EApp expr1 expr2) = f ((eval env expr1) (eval env expr2))
+eval [] (ELam id expr) = throw (Error ("unbound variable: " ++ id))
+eval env (ELam id expr) = (VClos env id expr)
+
+--eval env (EBin op expr1 expr2) = f value1 value2
+--    where
+--      value1 = eval env expr1
+--      value2 = eval env expr2
+--      f = case op of
+--         Binop op VInt value1  VInt value2 = value1 + value2   
+--         Minus -> (VInt value1) - (VInt value2)
+--         Mul -> (VInt value1) * (VInt value2)
+--         Div -> (VInt value1) / (VInt value2)
+--         Eq -> (VInt value1) = (VInt value2)
+--         Ne -> (VInt value1) != (VInt value2)
+--        VBool value1 || VBool value2
+--        VInt value1 + VInt value2
+
 
 --------------------------------------------------------------------------------
 evalOp :: Binop -> Value -> Value -> Value
 --------------------------------------------------------------------------------
-evalOp = error "TBD:evalOp"
+--evalOp a b c = error "TBD:evalOp"
+evalOp Plus (VInt value1) (VInt value2)  = (VInt (value1 + value2))
+evalOp Plus (VInt value1) (VBool value2) = throw (Error ("unbound variable: binop Plus"))
+evalOp Plus (VBool value1) (VInt value2) = throw (Error ("unbound variable: binop Plus"))
+
+evalOp Minus (VInt value1) (VInt value2)  = (VInt (value1 - value2))
+evalOp Minus (VInt value1) (VBool value2) = throw (Error ("unbound variable: binop Minus"))
+evalOp Minus (VBool value1) (VInt value2) = throw (Error ("unbound variable: binop Minus"))
+
+evalOp Mul (VInt value1) (VInt value2)  = (VInt (value1 * value2))
+evalOp Mul (VInt value1) (VBool value2) = throw (Error ("unbound variable: binop Mul"))
+evalOp Mul (VBool value1) (VInt value2) = throw (Error ("unbound variable: binop Mul"))
+
+evalOp Div (VInt value1) (VInt value2)  = (VInt (div value1 value2))
+evalOp Div (VInt value1) (VBool value2) = throw (Error ("unbound variable: binop Div"))
+evalOp Div (VBool value1) (VInt value2) = throw (Error ("unbound variable: binop Div"))
+
+evalOp Eq (VInt value1) (VInt value2)   = (VBool (value1 == value2))
+evalOp Eq (VBool value1) (VBool value2) = (VBool (value1 == value2))
+evalOp Eq (VInt value1) (VBool value2)  = throw (Error ("unbound variable: binop Eq"))
+evalOp Eq (VBool value1) (VInt value2)  = throw (Error ("unbound variable: binop Eq"))
+
+evalOp Ne (VInt value1) (VInt value2)   = (VBool (value1 /= value2))
+evalOp Ne (VBool value1) (VBool value2) = (VBool (value1 /= value2))
+evalOp Ne (VInt value1) (VBool value2)  = throw (Error ("unbound variable: binop Ne"))
+evalOp Ne (VBool value1) (VInt value2)  = throw (Error ("unbound variable: binop Ne"))
+
+evalOp Lt (VInt value1) (VInt value2)  = (VBool (value1 < value2))
+evalOp Lt (VInt value1) (VBool value2) = throw (Error ("unbound variable: binop Lt"))
+evalOp Lt (VBool value1) (VInt value2) = throw (Error ("unbound variable: binop Lt"))
+evalOp Lt (VInt value1) (VInt value2)  = throw (Error ("unbound variable: binop And"))
+
+evalOp Le (VInt value1) (VInt value2)  = (VBool (value1 <= value2))
+evalOp Le (VInt value1) (VBool value2) = throw (Error ("unbound variable: binop Le"))
+evalOp Le (VBool value1) (VInt value2) = throw (Error ("unbound variable: binop Le"))
+evalOp Le (VInt value1) (VInt value2)  = throw (Error ("unbound variable: binop And"))
+
+evalOp And (VBool value1) (VBool value2) = (VBool (value1 && value2))
+evalOp And (VInt value1) (VBool value2)  = throw (Error ("unbound variable: binop And"))
+evalOp And (VBool value1) (VInt value2)  = throw (Error ("unbound variable: binop And"))
+evalOp And (VInt value1) (VInt value2)   = throw (Error ("unbound variable: binop And"))
+
+evalOp Or (VBool value1) (VBool value2) = (VBool (value1 || value2))
+evalOp Or (VInt value1) (VBool value2)  = throw (Error ("unbound variable: binop Or"))
+evalOp Or (VBool value1) (VInt value2)  = throw (Error ("unbound variable: binop Or"))
+evalOp Or (VInt value1) (VInt value2)   = throw (Error ("unbound variable: binop Or"))
+
+--evalOp Cons value1 value2 = (VPair(value1 Cons value2)) more than one case errors maybe thrown 
+
+--evalOp Minus value1 value2 = ((VInt value1) Minus (VInt value2))
+--evalOp Mul value1 value2 = ((VInt value1) Mul (VInt value2))
+--evalOp Div value1 value2 = ((VInt value1) Div (VInt value2))
+--evalOp Eq value1 value2 = ((VBool value1) Eq (VBool value2))
+--evalOp Ne value1 value2 = ((VBool value1) Ne (VBool value2))
+--evalOp Lt value1 value2 = ((VBool value1) Lt (VBool value2))
+--evalOp Le value1 value2 = ((VBool value1) Le (VBool value2))
+--evalOp And value1 value2 = ((VBool value1) And (VBool value2))
+--evalOp Or value1 value2 = ((VBool value1) Or (VBool value2))
+--evalOp Cons value1 value2 = (VPair(value1 Cons value2)) more than one case errors maybe thrown
 
 --------------------------------------------------------------------------------
 -- | `lookupId x env` returns the most recent
@@ -181,17 +284,20 @@ evalOp = error "TBD:evalOp"
 --   environment, and throws an `Error` otherwise.
 --
 -- >>> lookupId "z1" env0
--- 0
+-- vint0
 -- >>> lookupId "x" env0
--- 1
+-- vint1
 -- >>> lookupId "y" env0
--- 2
+-- vint2
 -- >>> lookupId "mickey" env0
 -- *** Exception: Error {errMsg = "unbound variable: mickey"}
 --------------------------------------------------------------------------------
 lookupId :: Id -> Env -> Value
 --------------------------------------------------------------------------------
-lookupId = error "TBD:lookupId"
+--lookupId = error "TBD:lookupId"
+--lookupId key [] = error ("unbound variable: " ++ key)
+lookupId key [] = throw (Error ("unbound variable: " ++ key))
+lookupId key ((id, val):t) = if key == id then val else lookupId key t 
 
 prelude :: Env
 prelude =
