@@ -168,27 +168,33 @@ exitError (Error msg) = return (VErr msg)
 eval :: Env -> Expr -> Value
 --------------------------------------------------------------------------------
 --eval = error "TBD:eval"
-eval env (EInt int) = (VInt int)
-eval env (EBool bool) = (VBool bool) 
-eval env (ENil) = (VNil)
-eval env (EVar id) = (lookupId id env)
+eval _ (EInt int)                 = (VInt int)
+eval _ (EBool bool)               = (VBool bool) 
+eval _ (ENil)                     = (VNil)
+eval env (EVar id)                = (lookupId id env)
 
-eval env (EBin Plus expr1 expr2) = evalOp Plus (eval env expr1) (eval env expr2)
+eval env (EBin Plus expr1 expr2)  = evalOp Plus (eval env expr1) (eval env expr2)
 eval env (EBin Minus expr1 expr2) = evalOp Minus (eval env expr1) (eval env expr2)
-eval env (EBin Mul expr1 expr2) = evalOp Mul (eval env expr1) (eval env expr2)
-eval env (EBin Div expr1 expr2) = evalOp Div (eval env expr1) (eval env expr2)
-eval env (EBin Eq expr1 expr2) = evalOp Eq (eval env expr1) (eval env expr2)
-eval env (EBin Ne expr1 expr2) = evalOp Ne (eval env expr1) (eval env expr2)
-eval env (EBin Lt expr1 expr2) = evalOp Lt (eval env expr1) (eval env expr2)
-eval env (EBin Le expr1 expr2) = evalOp Le (eval env expr1) (eval env expr2)
-eval env (EBin And expr1 expr2) = evalOp And (eval env expr1) (eval env expr2)
-eval env (EBin Or expr1 expr2) = evalOp Or (eval env expr1) (eval env expr2)
-eval env (EBin Cons expr1 expr2) = evalOp Cons (eval env expr1) (eval env expr2)
+eval env (EBin Mul expr1 expr2)   = evalOp Mul (eval env expr1) (eval env expr2)
+eval env (EBin Div expr1 expr2)   = evalOp Div (eval env expr1) (eval env expr2)
+eval env (EBin Eq expr1 expr2)    = evalOp Eq (eval env expr1) (eval env expr2)
+eval env (EBin Ne expr1 expr2)    = evalOp Ne (eval env expr1) (eval env expr2)
+eval env (EBin Lt expr1 expr2)    = evalOp Lt (eval env expr1) (eval env expr2)
+eval env (EBin Le expr1 expr2)    = evalOp Le (eval env expr1) (eval env expr2)
+eval env (EBin And expr1 expr2)   = evalOp And (eval env expr1) (eval env expr2)
+eval env (EBin Or expr1 expr2)    = evalOp Or (eval env expr1) (eval env expr2)
+eval env (EBin Cons expr1 expr2)  = evalOp Cons (eval env expr1) (eval env expr2)
 
-eval env (EIf expr1 expr2 expr3) = if cond then (eval env expr2) else (eval env expr3)
+eval env (EIf expr1 expr2 expr3)  = if cond then (eval env expr2) else (eval env expr3)
     where 
       VBool cond = (eval env expr1)
-eval env (ELet id expr1 expr2) = (eval [(id, (eval env expr1))] expr2) --need more items only one item orginal enviorment is correct then the recurrsive enviormente 
+
+eval env (ELet id expr1 expr2)    = (eval [(id, (eval env expr1))] expr2) --need more items only one item orginal enviorment is correct then the recurrsive enviormente 
+--eval env (ELet id expr1 expr2)    = eval env' expr2
+--     where
+--       env' = add id (eval env expr1) env
+
+
 --eval env (EApp expr1 expr2) = f value1 value2
 --    where
 --      value1 = eval env expr1
@@ -196,8 +202,9 @@ eval env (ELet id expr1 expr2) = (eval [(id, (eval env expr1))] expr2) --need mo
 --      f = case op of
 
 --eval env (EApp expr1 expr2) = f ((eval env expr1) (eval env expr2))
-eval [] (ELam id expr) = throw (Error ("unbound variable: " ++ id))
-eval env (ELam id expr) = (VClos env id expr)
+
+eval []  (ELam id _)              = throw (Error ("unbound variable: " ++ id))
+eval env (ELam id expr)           = (VClos env id expr)
 
 --eval env (EBin op expr1 expr2) = f value1 value2
 --    where
@@ -218,51 +225,102 @@ eval env (ELam id expr) = (VClos env id expr)
 evalOp :: Binop -> Value -> Value -> Value
 --------------------------------------------------------------------------------
 --evalOp a b c = error "TBD:evalOp"
+-- = -- -- is the example stuff on how to handel Err _ honestly no clue how to handel that case atm.
+
+evalOp Plus (VInt _)      (VBool _)      = throw (Error ("type error: binop"))
+evalOp Plus (VBool _)     (VInt _)       = throw (Error ("type error: binop"))
+evalOp Plus (VBool _)     (VInt _)       = throw (Error ("type error: binop"))
+evalOp Plus (VNil)        (VInt _)       = throw (Error ("type error: binop")) --
+evalOp Plus (VInt _)      (VNil)         = throw (Error ("type error: binop")) --
+evalOp Plus (VNil)        (VBool _)      = throw (Error ("type error: binop")) --
+evalOp Plus (VBool _)     (VNil)         = throw (Error ("type error: binop")) --
+evalOp Plus (VBool _)     (VErr _)       = throw (Error ("type error: binop")) -- --
+evalOp Plus (VErr _)      (VInt _)       = throw (Error ("type error: binop")) -- --
+evalOp Plus (VInt _)      (VErr _)       = throw (Error ("type error: binop")) -- --
+evalOp Plus (VErr _)      (VBool _)      = throw (Error ("type error: binop")) -- --
 evalOp Plus (VInt value1) (VInt value2)  = (VInt (value1 + value2))
-evalOp Plus (VInt value1) (VBool value2) = throw (Error ("unbound variable: binop Plus"))
-evalOp Plus (VBool value1) (VInt value2) = throw (Error ("unbound variable: binop Plus"))
 
-evalOp Minus (VInt value1) (VInt value2)  = (VInt (value1 - value2))
-evalOp Minus (VInt value1) (VBool value2) = throw (Error ("unbound variable: binop Minus"))
-evalOp Minus (VBool value1) (VInt value2) = throw (Error ("unbound variable: binop Minus"))
+evalOp Minus (VInt _)      (VBool _)     = throw (Error ("type error: binop"))
+evalOp Minus (VBool _)     (VInt _)      = throw (Error ("type error: binop"))
+evalOp Minus (VBool _)     (VInt _)      = throw (Error ("type error: binop"))
+evalOp Minus (VNil)        (VInt _)      = throw (Error ("type error: binop")) --
+evalOp Minus (VInt _)      (VNil)        = throw (Error ("type error: binop")) --
+evalOp Minus (VNil)        (VBool _)     = throw (Error ("type error: binop")) --
+evalOp Minus (VBool _)     (VNil)        = throw (Error ("type error: binop")) --
+evalOp Minus (VInt value1) (VInt value2) = (VInt (value1 - value2))
 
-evalOp Mul (VInt value1) (VInt value2)  = (VInt (value1 * value2))
-evalOp Mul (VInt value1) (VBool value2) = throw (Error ("unbound variable: binop Mul"))
-evalOp Mul (VBool value1) (VInt value2) = throw (Error ("unbound variable: binop Mul"))
+evalOp Mul (VInt _)      (VBool _)       = throw (Error ("type error: binop"))
+evalOp Mul (VBool _)     (VInt _)        = throw (Error ("type error: binop"))
+evalOp Mul (VBool _)     (VInt _)        = throw (Error ("type error: binop"))
+evalOp Mul (VNil)        (VInt _)        = throw (Error ("type error: binop")) --
+evalOp Mul (VInt _)      (VNil)          = throw (Error ("type error: binop")) --
+evalOp Mul (VNil)        (VBool _)       = throw (Error ("type error: binop")) --
+evalOp Mul (VBool _)     (VNil)          = throw (Error ("type error: binop")) --
+evalOp Mul (VInt value1)  (VInt value2)  = (VInt (value1 * value2))
 
-evalOp Div (VInt value1) (VInt value2)  = (VInt (div value1 value2))
-evalOp Div (VInt value1) (VBool value2) = throw (Error ("unbound variable: binop Div"))
-evalOp Div (VBool value1) (VInt value2) = throw (Error ("unbound variable: binop Div"))
+evalOp Div (VInt _)      (VBool _)       = throw (Error ("type error: binop"))
+evalOp Div (VBool _)     (VInt _)        = throw (Error ("type error: binop"))
+evalOp Div (VBool _)     (VInt _)        = throw (Error ("type error: binop"))
+evalOp Div (VNil)        (VInt _)        = throw (Error ("type error: binop")) --
+evalOp Div (VInt _)      (VNil)          = throw (Error ("type error: binop")) --
+evalOp Div (VNil)        (VBool _)       = throw (Error ("type error: binop")) --
+evalOp Div (VBool _)     (VNil)          = throw (Error ("type error: binop")) --
+evalOp Div (VInt value1) (VInt value2)   = (VInt (div value1 value2))
 
-evalOp Eq (VInt value1) (VInt value2)   = (VBool (value1 == value2))
-evalOp Eq (VBool value1) (VBool value2) = (VBool (value1 == value2))
-evalOp Eq (VInt value1) (VBool value2)  = throw (Error ("unbound variable: binop Eq"))
-evalOp Eq (VBool value1) (VInt value2)  = throw (Error ("unbound variable: binop Eq"))
+evalOp Eq (VInt _)       (VBool _)       = throw (Error ("type error: binop"))
+evalOp Eq (VBool _)      (VInt _)        = throw (Error ("type error: binop"))
+evalOp Eq (VNil)         (VInt _)        = throw (Error ("type error: binop")) --
+evalOp Eq (VInt _)       (VNil)          = throw (Error ("type error: binop")) --
+evalOp Eq (VNil)         (VBool _)       = throw (Error ("type error: binop")) --
+evalOp Eq (VBool _)      (VNil)          = throw (Error ("type error: binop")) --
+evalOp Eq (VInt value1)  (VInt value2)   = (VBool (value1 == value2))
+evalOp Eq (VBool value1) (VBool value2)  = (VBool (value1 == value2))
 
-evalOp Ne (VInt value1) (VInt value2)   = (VBool (value1 /= value2))
-evalOp Ne (VBool value1) (VBool value2) = (VBool (value1 /= value2))
-evalOp Ne (VInt value1) (VBool value2)  = throw (Error ("unbound variable: binop Ne"))
-evalOp Ne (VBool value1) (VInt value2)  = throw (Error ("unbound variable: binop Ne"))
+evalOp Ne (VInt _)       (VBool _)       = throw (Error ("type error: binop"))
+evalOp Ne (VBool _)      (VInt _)        = throw (Error ("type error: binop"))
+evalOp Ne (VNil)         (VInt _)        = throw (Error ("type error: binop")) --
+evalOp Ne (VInt _)       (VNil)          = throw (Error ("type error: binop")) --
+evalOp Ne (VNil)         (VBool _)       = throw (Error ("type error: binop")) --
+evalOp Ne (VBool _)      (VNil)          = throw (Error ("type error: binop")) --
+evalOp Ne (VInt value1)  (VInt value2)   = (VBool (value1 /= value2))
+evalOp Ne (VBool value1) (VBool value2)  = (VBool (value1 /= value2))
 
-evalOp Lt (VInt value1) (VInt value2)  = (VBool (value1 < value2))
-evalOp Lt (VInt value1) (VBool value2) = throw (Error ("unbound variable: binop Lt"))
-evalOp Lt (VBool value1) (VInt value2) = throw (Error ("unbound variable: binop Lt"))
-evalOp Lt (VInt value1) (VInt value2)  = throw (Error ("unbound variable: binop And"))
+evalOp Lt (VInt _)      (VBool _)        = throw (Error ("type error: binop"))
+evalOp Lt (VBool _)     (VInt _)         = throw (Error ("type error: binop"))
+evalOp Lt (VBool _)     (VBool _)        = throw (Error ("type error: binop"))
+evalOp Lt (VNil)         (VInt _)        = throw (Error ("type error: binop")) --
+evalOp Lt (VInt _)       (VNil)          = throw (Error ("type error: binop")) --
+evalOp Lt (VNil)         (VBool _)       = throw (Error ("type error: binop")) --
+evalOp Lt (VBool _)      (VNil)          = throw (Error ("type error: binop")) --
+evalOp Lt (VInt value1) (VInt value2)    = (VBool (value1 < value2))
 
-evalOp Le (VInt value1) (VInt value2)  = (VBool (value1 <= value2))
-evalOp Le (VInt value1) (VBool value2) = throw (Error ("unbound variable: binop Le"))
-evalOp Le (VBool value1) (VInt value2) = throw (Error ("unbound variable: binop Le"))
-evalOp Le (VInt value1) (VInt value2)  = throw (Error ("unbound variable: binop And"))
+evalOp Le (VInt _)      (VBool _)        = throw (Error ("type error: binop"))
+evalOp Le (VBool _)     (VInt _)         = throw (Error ("type error: binop"))
+evalOp Le (VBool _)     (VBool _)        = throw (Error ("type error: binop"))
+evalOp Le (VNil)         (VInt _)        = throw (Error ("type error: binop")) --
+evalOp Le (VInt _)       (VNil)          = throw (Error ("type error: binop")) --
+evalOp Le (VNil)         (VBool _)       = throw (Error ("type error: binop")) --
+evalOp Le (VBool _)      (VNil)          = throw (Error ("type error: binop")) --
+evalOp Le (VInt value1) (VInt value2)    = (VBool (value1 <= value2))
 
+evalOp And (VInt _)       (VBool _)      = throw (Error ("type error: binop"))
+evalOp And (VBool _)      (VInt _)       = throw (Error ("type error: binop"))
+evalOp And (VInt _)       (VInt _)       = throw (Error ("type error: binop"))
+evalOp And (VNil)         (VInt _)       = throw (Error ("type error: binop")) --
+evalOp And (VInt _)       (VNil)         = throw (Error ("type error: binop")) --
+evalOp And (VNil)         (VBool _)      = throw (Error ("type error: binop")) --
+evalOp And (VBool _)      (VNil)         = throw (Error ("type error: binop")) --
 evalOp And (VBool value1) (VBool value2) = (VBool (value1 && value2))
-evalOp And (VInt value1) (VBool value2)  = throw (Error ("unbound variable: binop And"))
-evalOp And (VBool value1) (VInt value2)  = throw (Error ("unbound variable: binop And"))
-evalOp And (VInt value1) (VInt value2)   = throw (Error ("unbound variable: binop And"))
 
-evalOp Or (VBool value1) (VBool value2) = (VBool (value1 || value2))
-evalOp Or (VInt value1) (VBool value2)  = throw (Error ("unbound variable: binop Or"))
-evalOp Or (VBool value1) (VInt value2)  = throw (Error ("unbound variable: binop Or"))
-evalOp Or (VInt value1) (VInt value2)   = throw (Error ("unbound variable: binop Or"))
+evalOp Or (VInt _)       (VBool _)       = throw (Error ("type error: binop"))
+evalOp Or (VBool _)      (VInt _)        = throw (Error ("type error: binop"))
+evalOp Or (VInt _)       (VInt _)        = throw (Error ("type error: binop"))
+evalOp Or (VNil)         (VInt _)        = throw (Error ("type error: binop")) --
+evalOp Or (VInt _)       (VNil)          = throw (Error ("type error: binop")) --
+evalOp Or (VNil)         (VBool _)       = throw (Error ("type error: binop")) --
+evalOp Or (VBool _)      (VNil)          = throw (Error ("type error: binop")) --
+evalOp Or (VBool value1) (VBool value2)  = (VBool (value1 || value2))
+
 
 --evalOp Cons value1 value2 = (VPair(value1 Cons value2)) more than one case errors maybe thrown 
 
