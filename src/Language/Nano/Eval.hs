@@ -175,25 +175,29 @@ eval env (EVar id)                = (lookupId id env)
 
 eval env (EBin Plus expr1 expr2)  = evalOp Plus (eval env expr1) (eval env expr2)
 eval env (EBin Minus expr1 expr2) = evalOp Minus (eval env expr1) (eval env expr2)
-eval env (EBin Mul expr1 expr2)   = evalOp Mul (eval env expr1) (eval env expr2)
-eval env (EBin Div expr1 expr2)   = evalOp Div (eval env expr1) (eval env expr2)
-eval env (EBin Eq expr1 expr2)    = evalOp Eq (eval env expr1) (eval env expr2)
-eval env (EBin Ne expr1 expr2)    = evalOp Ne (eval env expr1) (eval env expr2)
-eval env (EBin Lt expr1 expr2)    = evalOp Lt (eval env expr1) (eval env expr2)
-eval env (EBin Le expr1 expr2)    = evalOp Le (eval env expr1) (eval env expr2)
-eval env (EBin And expr1 expr2)   = evalOp And (eval env expr1) (eval env expr2)
-eval env (EBin Or expr1 expr2)    = evalOp Or (eval env expr1) (eval env expr2)
+eval env (EBin Mul expr1 expr2)   = evalOp Mul  (eval env expr1) (eval env expr2)
+eval env (EBin Div expr1 expr2)   = evalOp Div  (eval env expr1) (eval env expr2)
+eval env (EBin Eq expr1 expr2)    = evalOp Eq   (eval env expr1) (eval env expr2)
+eval env (EBin Ne expr1 expr2)    = evalOp Ne   (eval env expr1) (eval env expr2)
+eval env (EBin Lt expr1 expr2)    = evalOp Lt   (eval env expr1) (eval env expr2)
+eval env (EBin Le expr1 expr2)    = evalOp Le   (eval env expr1) (eval env expr2)
+eval env (EBin And expr1 expr2)   = evalOp And  (eval env expr1) (eval env expr2)
+eval env (EBin Or expr1 expr2)    = evalOp Or   (eval env expr1) (eval env expr2)
 eval env (EBin Cons expr1 expr2)  = evalOp Cons (eval env expr1) (eval env expr2)
 
-eval env (EIf expr1 expr2 expr3)  = if cond then (eval env expr2) else (eval env expr3)
+--eval env (EIf expr1 expr2 expr3)  = if cond then (eval env expr2) else (eval env expr3)
+--    where 
+--      VBool cond = (eval env expr1)
+eval env (EIf expr1 expr2 expr3)  = if cond then (if (eval env expr1) then (eval env expr2) else (eval env expr3)) else throw (Error ("type error"))
     where 
       VBool cond = (eval env expr1)
 
-eval env (ELet id expr1 expr2)    = (eval [(id, (eval env expr1))] expr2) --need more items only one item orginal enviorment is correct then the recurrsive enviormente 
---eval env (ELet id expr1 expr2)    = eval env' expr2
---     where
---       env' = add id (eval env expr1) env
 
+--eval env (ELet id expr1 expr2)    = (eval [(id, (eval env expr1))] expr2) 
+--eval env (ELet id expr1 expr2)    = (eval [(id, (eval env expr1))] expr2) --need more items only one item orginal enviorment is correct then the recurrsive enviormente 
+eval env (ELet id expr1 expr2)    = eval env' expr2
+     where
+       env' = [(id, (eval env expr1))]
 
 --eval env (EApp expr1 expr2) = f value1 value2
 --    where
@@ -239,6 +243,7 @@ evalOp Plus (VErr _)      (VInt _)       = throw (Error ("type error: binop")) -
 evalOp Plus (VInt _)      (VErr _)       = throw (Error ("type error: binop")) -- --
 evalOp Plus (VErr _)      (VBool _)      = throw (Error ("type error: binop")) -- --
 evalOp Plus (VInt value1) (VInt value2)  = (VInt (value1 + value2))
+--evalOp Plus (VClos _ _ value1) (VClos _ _ value2)  = (VClos _ _ (value1 + value2))
 
 evalOp Minus (VInt _)      (VBool _)     = throw (Error ("type error: binop"))
 evalOp Minus (VBool _)     (VInt _)      = throw (Error ("type error: binop"))
@@ -322,7 +327,8 @@ evalOp Or (VBool _)      (VNil)          = throw (Error ("type error: binop")) -
 evalOp Or (VBool value1) (VBool value2)  = (VBool (value1 || value2))
 
 
---evalOp Cons value1 value2 = (VPair(value1 Cons value2)) more than one case errors maybe thrown 
+--evalOp Cons (VInt value1) (VInt value2) = (VPair value1 value2)
+-- more than one case errors maybe thrown 
 
 --evalOp Minus value1 value2 = ((VInt value1) Minus (VInt value2))
 --evalOp Mul value1 value2 = ((VInt value1) Mul (VInt value2))
