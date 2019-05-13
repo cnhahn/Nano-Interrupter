@@ -28,12 +28,34 @@ tokens :-
   ------------------------------------------------------------------------------
   -- Syntax  [ THIS IS THE ONLY SEGMENT YOU NEED TO CHANGE ]
 
+  let                           { \p _ -> LET    p }
+  True                          { \p _ -> TRUE   p }
+  False                         { \p _ -> FALSE  p } 
   in                            { \p _ -> IN     p }
+  if                            { \p _ -> IF     p }
+  then                          { \p _ -> THEN   p }
+  else                          { \p _ -> ELSE   p }
   "&&"                          { \p _ -> AND    p }
+  "||"                          { \p _ -> OR     p }
+  "<"                           { \p _ -> LESS   p }
+  "<="                          { \p _ -> LEQ    p }
+  "/="                          { \p _ -> NEQ    p }
+  [\\]                          { \p _ -> LAM    p }
+ $digit+                        { \p s -> NUM    p (read s) }
+ $alpha [$alpha $digit \_ \']*  { \p s -> ID     p s }
+  "->"                          { \p _ -> ARROW  p }
+  "="                           { \p _ -> EQB    p }
+  "=="                          { \p _ -> EQL    p }
+  [\+]                          { \p _ -> PLUS  p  }
+  [\-]                          { \p _ -> MINUS p  }
+  [\*]                          { \p _ -> MUL   p  }      
   \(                            { \p _ -> LPAREN p }
   \)                            { \p _ -> RPAREN p }
+  \]                            { \p _ -> RBRAC  p }
+  \[                            { \p _ -> LBRAC  p }
   \:                            { \p _ -> COLON  p }
   \,                            { \p _ -> COMMA  p }
+  eof                           { \p _ -> EOF    p }
 
   -- DO NOT CHANGE ANYTHING AFTER THIS LINE ------------------------------------
   ------------------------------------------------------------------------------

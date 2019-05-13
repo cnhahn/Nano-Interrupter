@@ -185,24 +185,10 @@ eval env (EBin And expr1 expr2)   = evalOp And  (eval env expr1) (eval env expr2
 eval env (EBin Or expr1 expr2)    = evalOp Or   (eval env expr1) (eval env expr2)
 eval env (EBin Cons expr1 expr2)  = evalOp Cons (eval env expr1) (eval env expr2)
 
-------------------------------------------------------------------------------
-
-eval env (EIf expr1 expr2 expr3)  = if cond then (eval env expr2) else (eval env expr3)
-    where 
-      VBool cond = (eval env expr1)
-eval env (EIf _ _ _)  = throw (Error ("type error"))
-
---eval env (EIf expr1 expr2 expr3)  = if ((cond /= ct) || (cond /= cf)) then throw (Error ("type error")) else (if cond then (eval env expr2) else (eval env expr3)) 
---    where 
---      VBool cond = (eval env expr1)
---      VBool ct = (eval env (EBool True))
---      VBool cf = (eval env (EBool False))
-
---eval env (EIf expr1 expr2 expr3)  = if cond then (eval env expr2) else if (cond == cf) then (eval env expr3) else throw (Error ("type error"))
---   where 
---      VBool cond = (eval env expr1)
---      VBool ct = (eval env (EBool True))
---      VBool cf = (eval env (EBool False))
+eval env (EIf expr1 expr2 expr3) 
+   | (((eval env expr1)) == ((eval env (EBool True)))) = (eval env expr2)
+   | (((eval env expr1)) == ((eval env (EBool False)))) = (eval env expr3)
+   | otherwise = throw (Error ("type error"))
 
 -------------------------------------------------------------------------------
 --eval env (ELet id expr1 expr2)    = (eval [(id, (eval env expr1))] expr2) 

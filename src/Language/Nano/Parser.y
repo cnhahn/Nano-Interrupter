@@ -67,7 +67,28 @@ import Control.Exception
 Top  : ID '=' Expr                 { $3 }
      | Expr                        { $1 }
 
+--Expr : let ID '=' Expr in Expr   { EApp (ELam $2 $6) $4 }
+Expr : if Expr then Expr else Expr { EIf ($2) ($4) ($6) }
+Expr : let ID '=' Expr in Expr     { ELet $2 ($4) ($6)}
+Expr : Expr Expr                   { EApp ($1) ($2) }
+Expr : '\\' ID '->' Expr           { ELam $2 ($4) }
+Expr : Expr '+' Expr               { EBin Plus $1 $3 }
+Expr : Expr '-' Expr               { EBin Minus $1 $3 }
+Expr : Expr '*' Expr               { EBin Mul $1 $3 }
+Expr : Expr '&&' Expr              { EBin And $1 $3 }
+Expr : Expr '||' Expr              { EBin Or $1 $3 }
+Expr : Expr '==' Expr              { EBin Eq $1 $3 }
+Expr : Expr '/=' Expr              { EBin Ne $1 $3 }
+Expr : Expr '<' Expr               { EBin Lt $1 $3 }
+Expr : Expr '<=' Expr              { EBin Le $1 $3 }
+Expr : Expr ':' Expr               { EBin Cons $1 $3 }
+Expr : '(' Expr ')'                { $2 }
+Expr : '[' Expr ']'                { $2 }
+--Expr :'(' Expr ',' Expr ')'              { $2 $4 }-- need help with commas ; , ;
+Expr : ID                          { EVar $1 }
 Expr : TNUM                        { EInt $1 }
+Expr : true                        { EBool True }
+Expr : false                       { EBool False }
 
 {
 mkLam :: [Id] -> Expr -> Expr
