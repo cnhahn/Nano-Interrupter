@@ -185,44 +185,47 @@ eval env (EBin And expr1 expr2)   = evalOp And  (eval env expr1) (eval env expr2
 eval env (EBin Or expr1 expr2)    = evalOp Or   (eval env expr1) (eval env expr2)
 eval env (EBin Cons expr1 expr2)  = evalOp Cons (eval env expr1) (eval env expr2)
 
+------------------------------------------------------------------------------
 --eval env (EIf expr1 expr2 expr3)  = if cond then (eval env expr2) else (eval env expr3)
 --    where 
 --      VBool cond = (eval env expr1)
-eval env (EIf expr1 expr2 expr3)  = if cond then (if (eval env expr1) then (eval env expr2) else (eval env expr3)) else throw (Error ("type error"))
-    where 
+
+--eval env (EIf expr1 expr2 expr3)  = if ((cond /= ct) || (cond /= cf) ) then throw (Error ("type error")) else (if cond then (eval env expr2) else (eval env expr3)) 
+--    where 
+--      VBool cond = (eval env expr1)
+--      VBool ct = (eval env (EBool True))
+--      VBool cf = (eval env (EBool False))
+
+eval env (EIf expr1 expr2 expr3)  = if cond then (eval env expr2) else if (cond == cf) then (eval env expr3) else throw (Error ("type error"))
+   where 
       VBool cond = (eval env expr1)
+      VBool ct = (eval env (EBool True))
+      VBool cf = (eval env (EBool False))
 
-
+-------------------------------------------------------------------------------
 --eval env (ELet id expr1 expr2)    = (eval [(id, (eval env expr1))] expr2) 
 --eval env (ELet id expr1 expr2)    = (eval [(id, (eval env expr1))] expr2) --need more items only one item orginal enviorment is correct then the recurrsive enviormente 
-eval env (ELet id expr1 expr2)    = eval env' expr2
+eval env (ELet id expr1 expr2)    = eval (env' ++ env) expr2
      where
        env' = [(id, (eval env expr1))]
 
+--eval env (ELet id expr1 expr2)    = eval env' expr2
+--     where
+--       env' = [(id, (eval env expr1))]
+
+-------------------------------------------------------------------------------
+eval []  (ELam id _)              = throw (Error ("unbound variable: " ++ id))
+eval env (ELam id expr)           = (VClos env id expr)
+
+-------------------------------------------------------------------------------
 --eval env (EApp expr1 expr2) = f value1 value2
 --    where
 --      value1 = eval env expr1
 --      value2 = eval env expr2
 --      f = case op of
 
---eval env (EApp expr1 expr2) = f ((eval env expr1) (eval env expr2))
+--eval env (EApp expr1 expr2) = ((eval env expr1) (eval env expr2))
 
-eval []  (ELam id _)              = throw (Error ("unbound variable: " ++ id))
-eval env (ELam id expr)           = (VClos env id expr)
-
---eval env (EBin op expr1 expr2) = f value1 value2
---    where
---      value1 = eval env expr1
---      value2 = eval env expr2
---      f = case op of
---         Binop op VInt value1  VInt value2 = value1 + value2   
---         Minus -> (VInt value1) - (VInt value2)
---         Mul -> (VInt value1) * (VInt value2)
---         Div -> (VInt value1) / (VInt value2)
---         Eq -> (VInt value1) = (VInt value2)
---         Ne -> (VInt value1) != (VInt value2)
---        VBool value1 || VBool value2
---        VInt value1 + VInt value2
 
 
 --------------------------------------------------------------------------------
@@ -326,19 +329,10 @@ evalOp Or (VNil)         (VBool _)       = throw (Error ("type error: binop")) -
 evalOp Or (VBool _)      (VNil)          = throw (Error ("type error: binop")) --
 evalOp Or (VBool value1) (VBool value2)  = (VBool (value1 || value2))
 
-
---evalOp Cons (VInt value1) (VInt value2) = (VPair value1 value2)
+evalOp Cons (x) (VNil) = (VPair x (VNil))
+evalOp Cons (x) (VPair a b) = (VPair x (VPair a b))
 -- more than one case errors maybe thrown 
 
---evalOp Minus value1 value2 = ((VInt value1) Minus (VInt value2))
---evalOp Mul value1 value2 = ((VInt value1) Mul (VInt value2))
---evalOp Div value1 value2 = ((VInt value1) Div (VInt value2))
---evalOp Eq value1 value2 = ((VBool value1) Eq (VBool value2))
---evalOp Ne value1 value2 = ((VBool value1) Ne (VBool value2))
---evalOp Lt value1 value2 = ((VBool value1) Lt (VBool value2))
---evalOp Le value1 value2 = ((VBool value1) Le (VBool value2))
---evalOp And value1 value2 = ((VBool value1) And (VBool value2))
---evalOp Or value1 value2 = ((VBool value1) Or (VBool value2))
 --evalOp Cons value1 value2 = (VPair(value1 Cons value2)) more than one case errors maybe thrown
 
 --------------------------------------------------------------------------------
