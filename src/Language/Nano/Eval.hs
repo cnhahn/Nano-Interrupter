@@ -186,21 +186,23 @@ eval env (EBin Or expr1 expr2)    = evalOp Or   (eval env expr1) (eval env expr2
 eval env (EBin Cons expr1 expr2)  = evalOp Cons (eval env expr1) (eval env expr2)
 
 ------------------------------------------------------------------------------
---eval env (EIf expr1 expr2 expr3)  = if cond then (eval env expr2) else (eval env expr3)
---    where 
---      VBool cond = (eval env expr1)
 
---eval env (EIf expr1 expr2 expr3)  = if ((cond /= ct) || (cond /= cf) ) then throw (Error ("type error")) else (if cond then (eval env expr2) else (eval env expr3)) 
+eval env (EIf expr1 expr2 expr3)  = if cond then (eval env expr2) else (eval env expr3)
+    where 
+      VBool cond = (eval env expr1)
+eval env (EIf _ _ _)  = throw (Error ("type error"))
+
+--eval env (EIf expr1 expr2 expr3)  = if ((cond /= ct) || (cond /= cf)) then throw (Error ("type error")) else (if cond then (eval env expr2) else (eval env expr3)) 
 --    where 
 --      VBool cond = (eval env expr1)
 --      VBool ct = (eval env (EBool True))
 --      VBool cf = (eval env (EBool False))
 
-eval env (EIf expr1 expr2 expr3)  = if cond then (eval env expr2) else if (cond == cf) then (eval env expr3) else throw (Error ("type error"))
-   where 
-      VBool cond = (eval env expr1)
-      VBool ct = (eval env (EBool True))
-      VBool cf = (eval env (EBool False))
+--eval env (EIf expr1 expr2 expr3)  = if cond then (eval env expr2) else if (cond == cf) then (eval env expr3) else throw (Error ("type error"))
+--   where 
+--      VBool cond = (eval env expr1)
+--      VBool ct = (eval env (EBool True))
+--      VBool cf = (eval env (EBool False))
 
 -------------------------------------------------------------------------------
 --eval env (ELet id expr1 expr2)    = (eval [(id, (eval env expr1))] expr2) 
@@ -234,103 +236,43 @@ evalOp :: Binop -> Value -> Value -> Value
 --evalOp a b c = error "TBD:evalOp"
 -- = -- -- is the example stuff on how to handel Err _ honestly no clue how to handel that case atm.
 
-evalOp Plus (VInt _)      (VBool _)      = throw (Error ("type error: binop"))
-evalOp Plus (VBool _)     (VInt _)       = throw (Error ("type error: binop"))
-evalOp Plus (VBool _)     (VInt _)       = throw (Error ("type error: binop"))
-evalOp Plus (VNil)        (VInt _)       = throw (Error ("type error: binop")) --
-evalOp Plus (VInt _)      (VNil)         = throw (Error ("type error: binop")) --
-evalOp Plus (VNil)        (VBool _)      = throw (Error ("type error: binop")) --
-evalOp Plus (VBool _)     (VNil)         = throw (Error ("type error: binop")) --
-evalOp Plus (VBool _)     (VErr _)       = throw (Error ("type error: binop")) -- --
-evalOp Plus (VErr _)      (VInt _)       = throw (Error ("type error: binop")) -- --
-evalOp Plus (VInt _)      (VErr _)       = throw (Error ("type error: binop")) -- --
-evalOp Plus (VErr _)      (VBool _)      = throw (Error ("type error: binop")) -- --
 evalOp Plus (VInt value1) (VInt value2)  = (VInt (value1 + value2))
+evalOp Plus _ _                          = throw (Error ("type error: binop"))
 --evalOp Plus (VClos _ _ value1) (VClos _ _ value2)  = (VClos _ _ (value1 + value2))
 
-evalOp Minus (VInt _)      (VBool _)     = throw (Error ("type error: binop"))
-evalOp Minus (VBool _)     (VInt _)      = throw (Error ("type error: binop"))
-evalOp Minus (VBool _)     (VInt _)      = throw (Error ("type error: binop"))
-evalOp Minus (VNil)        (VInt _)      = throw (Error ("type error: binop")) --
-evalOp Minus (VInt _)      (VNil)        = throw (Error ("type error: binop")) --
-evalOp Minus (VNil)        (VBool _)     = throw (Error ("type error: binop")) --
-evalOp Minus (VBool _)     (VNil)        = throw (Error ("type error: binop")) --
 evalOp Minus (VInt value1) (VInt value2) = (VInt (value1 - value2))
+evalOp Minus _ _                         = throw (Error ("type error: binop"))
 
-evalOp Mul (VInt _)      (VBool _)       = throw (Error ("type error: binop"))
-evalOp Mul (VBool _)     (VInt _)        = throw (Error ("type error: binop"))
-evalOp Mul (VBool _)     (VInt _)        = throw (Error ("type error: binop"))
-evalOp Mul (VNil)        (VInt _)        = throw (Error ("type error: binop")) --
-evalOp Mul (VInt _)      (VNil)          = throw (Error ("type error: binop")) --
-evalOp Mul (VNil)        (VBool _)       = throw (Error ("type error: binop")) --
-evalOp Mul (VBool _)     (VNil)          = throw (Error ("type error: binop")) --
 evalOp Mul (VInt value1)  (VInt value2)  = (VInt (value1 * value2))
+evalOp Mul _ _                           = throw (Error ("type error: binop"))
 
-evalOp Div (VInt _)      (VBool _)       = throw (Error ("type error: binop"))
-evalOp Div (VBool _)     (VInt _)        = throw (Error ("type error: binop"))
-evalOp Div (VBool _)     (VInt _)        = throw (Error ("type error: binop"))
-evalOp Div (VNil)        (VInt _)        = throw (Error ("type error: binop")) --
-evalOp Div (VInt _)      (VNil)          = throw (Error ("type error: binop")) --
-evalOp Div (VNil)        (VBool _)       = throw (Error ("type error: binop")) --
-evalOp Div (VBool _)     (VNil)          = throw (Error ("type error: binop")) --
 evalOp Div (VInt value1) (VInt value2)   = (VInt (div value1 value2))
+evalOp Div _ _                           = throw (Error ("type error: binop"))
 
-evalOp Eq (VInt _)       (VBool _)       = throw (Error ("type error: binop"))
-evalOp Eq (VBool _)      (VInt _)        = throw (Error ("type error: binop"))
-evalOp Eq (VNil)         (VInt _)        = throw (Error ("type error: binop")) --
-evalOp Eq (VInt _)       (VNil)          = throw (Error ("type error: binop")) --
-evalOp Eq (VNil)         (VBool _)       = throw (Error ("type error: binop")) --
-evalOp Eq (VBool _)      (VNil)          = throw (Error ("type error: binop")) --
 evalOp Eq (VInt value1)  (VInt value2)   = (VBool (value1 == value2))
 evalOp Eq (VBool value1) (VBool value2)  = (VBool (value1 == value2))
+evalOp Eq _ _                            = throw (Error ("type error: binop"))
 
-evalOp Ne (VInt _)       (VBool _)       = throw (Error ("type error: binop"))
-evalOp Ne (VBool _)      (VInt _)        = throw (Error ("type error: binop"))
-evalOp Ne (VNil)         (VInt _)        = throw (Error ("type error: binop")) --
-evalOp Ne (VInt _)       (VNil)          = throw (Error ("type error: binop")) --
-evalOp Ne (VNil)         (VBool _)       = throw (Error ("type error: binop")) --
-evalOp Ne (VBool _)      (VNil)          = throw (Error ("type error: binop")) --
 evalOp Ne (VInt value1)  (VInt value2)   = (VBool (value1 /= value2))
 evalOp Ne (VBool value1) (VBool value2)  = (VBool (value1 /= value2))
+evalOp Ne _ _                            = throw (Error ("type error: binop"))
 
-evalOp Lt (VInt _)      (VBool _)        = throw (Error ("type error: binop"))
-evalOp Lt (VBool _)     (VInt _)         = throw (Error ("type error: binop"))
-evalOp Lt (VBool _)     (VBool _)        = throw (Error ("type error: binop"))
-evalOp Lt (VNil)         (VInt _)        = throw (Error ("type error: binop")) --
-evalOp Lt (VInt _)       (VNil)          = throw (Error ("type error: binop")) --
-evalOp Lt (VNil)         (VBool _)       = throw (Error ("type error: binop")) --
-evalOp Lt (VBool _)      (VNil)          = throw (Error ("type error: binop")) --
 evalOp Lt (VInt value1) (VInt value2)    = (VBool (value1 < value2))
+evalOp Lt _ _                            = throw (Error ("type error: binop"))
 
-evalOp Le (VInt _)      (VBool _)        = throw (Error ("type error: binop"))
-evalOp Le (VBool _)     (VInt _)         = throw (Error ("type error: binop"))
-evalOp Le (VBool _)     (VBool _)        = throw (Error ("type error: binop"))
-evalOp Le (VNil)         (VInt _)        = throw (Error ("type error: binop")) --
-evalOp Le (VInt _)       (VNil)          = throw (Error ("type error: binop")) --
-evalOp Le (VNil)         (VBool _)       = throw (Error ("type error: binop")) --
-evalOp Le (VBool _)      (VNil)          = throw (Error ("type error: binop")) --
 evalOp Le (VInt value1) (VInt value2)    = (VBool (value1 <= value2))
+evalOp Le _ _                            = throw (Error ("type error: binop"))
 
-evalOp And (VInt _)       (VBool _)      = throw (Error ("type error: binop"))
-evalOp And (VBool _)      (VInt _)       = throw (Error ("type error: binop"))
-evalOp And (VInt _)       (VInt _)       = throw (Error ("type error: binop"))
-evalOp And (VNil)         (VInt _)       = throw (Error ("type error: binop")) --
-evalOp And (VInt _)       (VNil)         = throw (Error ("type error: binop")) --
-evalOp And (VNil)         (VBool _)      = throw (Error ("type error: binop")) --
-evalOp And (VBool _)      (VNil)         = throw (Error ("type error: binop")) --
 evalOp And (VBool value1) (VBool value2) = (VBool (value1 && value2))
+evalOp And _ _                           = throw (Error ("type error: binop"))
 
-evalOp Or (VInt _)       (VBool _)       = throw (Error ("type error: binop"))
-evalOp Or (VBool _)      (VInt _)        = throw (Error ("type error: binop"))
-evalOp Or (VInt _)       (VInt _)        = throw (Error ("type error: binop"))
-evalOp Or (VNil)         (VInt _)        = throw (Error ("type error: binop")) --
-evalOp Or (VInt _)       (VNil)          = throw (Error ("type error: binop")) --
-evalOp Or (VNil)         (VBool _)       = throw (Error ("type error: binop")) --
-evalOp Or (VBool _)      (VNil)          = throw (Error ("type error: binop")) --
 evalOp Or (VBool value1) (VBool value2)  = (VBool (value1 || value2))
+evalOp Or _ _                            = throw (Error ("type error: binop"))
 
-evalOp Cons (x) (VNil) = (VPair x (VNil))
-evalOp Cons (x) (VPair a b) = (VPair x (VPair a b))
+evalOp Cons (x) (VNil)                   = (VPair x (VNil))
+evalOp Cons (x) (VPair a b)              = (VPair x (VPair a b))
+evalOp Cons _ _                          = throw (Error ("type error: binop"))
+
 -- more than one case errors maybe thrown 
 
 --evalOp Cons value1 value2 = (VPair(value1 Cons value2)) more than one case errors maybe thrown
