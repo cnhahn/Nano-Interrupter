@@ -190,31 +190,33 @@ eval env (EIf expr1 expr2 expr3)
    | (((eval env expr1)) == ((eval env (EBool False)))) = (eval env expr3)
    | otherwise = throw (Error ("type error"))
 
--------------------------------------------------------------------------------
---eval env (ELet id expr1 expr2)    = (eval [(id, (eval env expr1))] expr2) 
---eval env (ELet id expr1 expr2)    = (eval [(id, (eval env expr1))] expr2) --need more items only one item orginal enviorment is correct then the recurrsive enviormente 
-eval env (ELet id expr1 expr2)    = eval (env' ++ env) expr2
+------------------------------------------------------------------------------- 
+eval [] (ELet id expr1 expr2) = eval (env') expr2
+     where
+       env' = [(id, (eval [] expr1))]
+
+eval env (ELet id expr1 expr2) = eval (env' ++ env) expr2
      where
        env' = [(id, (eval env expr1))]
 
---eval env (ELet id expr1 expr2)    = eval env' expr2
---     where
---       env' = [(id, (eval env expr1))]
-
 -------------------------------------------------------------------------------
-eval []  (ELam id _)              = throw (Error ("unbound variable: " ++ id))
+--eval []  (ELam id _)              = throw (Error ("unbound variable: " ++ id))
 eval env (ELam id expr)           = (VClos env id expr)
 
 -------------------------------------------------------------------------------
---eval env (EApp expr1 expr2) = f value1 value2
---    where
---      value1 = eval env expr1
---      value2 = eval env expr2
---      f = case op of
+--eval env (EApp expr1 expr2) = value1 value2
+  --  where
+    --  value1 = eval env expr1
+     -- value2 id g h = eval env expr2
+     -- env' = [(id, )] 
 
 --eval env (EApp expr1 expr2) = ((eval env expr1) (eval env expr2))
 
-
+eval env (EApp a b) = eval (v ++ env') e
+     where 
+     VClos env' id e = eval env a
+     v = [(id , (eval env b))] 
+     
 
 --------------------------------------------------------------------------------
 evalOp :: Binop -> Value -> Value -> Value
