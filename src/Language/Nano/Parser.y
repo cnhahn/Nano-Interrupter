@@ -74,13 +74,10 @@ Expr : Expr Expr                   { EApp ($1) ($2) }
 Expr : '\\' ID '->' Expr           { ELam $2 ($4) }
 --Expr : let Expr ID '=' Expr      { ELet $2 ($3) ($5) }
 
-
-Expr : Expr ':' Expr               { EBin Cons ($1) $3 }
 Expr : '(' Expr ')'                { $2 }
 Expr : '[' Expr ']'                { $2 }
 Expr : '[' ']'                     { ENil }
-Expr : Expr ',' Expr               { EBin Cons ($1) ($3) }
---Expr : Expr ','Expr ',' Expr               { EBin Cons ($1) (EBin Cons ($3) (EBin Cons ($5) ENil) ) }-- need help with where nil will show up at end when doing parse [1,3,5] ; , ;
+
 Expr : ID                          { EVar $1 }
 Expr : TNUM                        { EInt $1 }
 Expr : true                        { EBool True }
@@ -95,6 +92,14 @@ Expr : Expr '<' Expr               { EBin Lt $1 $3 }
 Expr : Expr '<=' Expr              { EBin Le $1 $3 }
 Expr : Expr '&&' Expr              { EBin And $1 $3 }
 Expr : Expr '||' Expr              { EBin Or $1 $3 }
+
+Expr : Expr ',' Expr              { EBin Cons ($1) ($3) }
+--Expr2 : Expr ',' Expr           { EBin Cons ($1) ($3) }
+--      | Expr                    { EBin Cons ($1) ENil }  
+
+Expr : Expr ':' Expr               { EBin Cons ($1) $3 }
+--Expr3 : Expr ':' Expr           { EBin Cons ($1) ($3) }
+--      | Expr                       { EBin Cons ($1) ENil } 
 
 
 {

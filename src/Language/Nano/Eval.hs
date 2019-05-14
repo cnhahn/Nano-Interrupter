@@ -204,19 +204,15 @@ eval env (ELet id expr1 expr2) = eval (env' ++ env) expr2
 eval env (ELam id expr)           = (VClos env id expr)
 
 -------------------------------------------------------------------------------
---eval env (EApp expr1 expr2) = value1 value2
-  --  where
-    --  value1 = eval env expr1
-     -- value2 id g h = eval env expr2
-     -- env' = [(id, )] 
-
---eval env (EApp expr1 expr2) = ((eval env expr1) (eval env expr2))
-
-eval env (EApp a b) = eval (v ++ env') e
-     where 
-     VClos env' id e = eval env a
-     v = [(id , (eval env b))] 
+--eval env (EApp a b) = eval (v ++ env') e
+--     where 
+--     VClos env' id e = eval env a
+--     v = [(id , (eval env b))] 
      
+eval env (EApp a b) = case (eval env a) of
+     VClos env' id e -> eval ( [(id, (eval env b))] ++ env' ) e 
+     _ ->  throw (Error ("Error in EApp: "))
+
 
 --------------------------------------------------------------------------------
 evalOp :: Binop -> Value -> Value -> Value
