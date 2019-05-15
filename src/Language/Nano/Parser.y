@@ -67,14 +67,18 @@ import Control.Exception
 Top  : ID '=' Expr                 { $3 }
      | Expr                        { $1 }
 
-Expr : let ID '=' Expr in Expr     { ELet $2 ($4) ($6) }
+Expr : let ID '=' Expr in Expr     { ELet $2 ($4) ($6)}
      | '\\' ID '->' Expr           { ELam $2 ($4) }
      | Expr ':'  Expr              { EBin Cons ($1) $3 }
      | Coms                        { $1 }
 
 Coms : Coms ','  Coms              { EBin Cons ($1) ($3) }
 --     | Coms                        { EBin Cons ($1) ENil } 
-     | Comp                        { $1 }
+     | Comps                        { $1 }
+
+Comps : Comps '||' Comps           { EBin Or $1 $3 }
+      | Comps '&&' Comps           { EBin And $1 $3 } 
+      | Comp                       { $1 }
 
 Comp : if Expr then Expr else Expr { EIf ($2) ($4) ($6) }
      | Comp '==' Comp              { EBin Eq $1 $3 }
@@ -83,12 +87,12 @@ Comp : if Expr then Expr else Expr { EIf ($2) ($4) ($6) }
      | Comp '<=' Comp              { EBin Le $1 $3 }
      | Form                        { $1 }
 
-Form : Form '||' Form              { EBin Or $1 $3 }
-     | Form '&&' Form              { EBin And $1 $3 }
-     | Form '+'  Form              { EBin Plus $1 $3 }
+Form : Form '+'  Form              { EBin Plus $1 $3 }
      | Form '-'  Form              { EBin Minus $1 $3 }
-     | Form '*'  Form              { EBin Mul $1 $3 }
      | '[' ']'                     { ENil }
+     | Muli                        { $1 }
+
+Muli : Muli '*'  Muli              { EBin Mul $1 $3 }
      | Fact                        { $1 }
 
 Fact : Fact Unit                   { EApp ($1) ($2) }
