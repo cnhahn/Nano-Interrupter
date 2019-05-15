@@ -67,39 +67,43 @@ import Control.Exception
 Top  : ID '=' Expr                 { $3 }
      | Expr                        { $1 }
 
---Expr : let ID '=' Expr in Expr   { EApp (ELam $2 $6) $4 }
-Expr : if Expr then Expr else Expr { EIf ($2) ($4) ($6) }
-Expr : let ID '=' Expr in Expr     { ELet $2 ($4) ($6)}
-Expr : Expr Expr                   { EApp ($1) ($2) }
-Expr : '\\' ID '->' Expr           { ELam $2 ($4) }
---Expr : let Expr ID '=' Expr      { ELet $2 ($3) ($5) }
+Expr : let ID '=' Expr in Expr     { ELet $2 ($4) ($6) }
+     | '\\' ID '->' Expr           { ELam $2 ($4) }
+     | Expr ':'  Expr              { EBin Cons ($1) $3 }
+     | Coms                        { $1 }
 
-Expr : '(' Expr ')'                { $2 }
-Expr : '[' Expr ']'                { $2 }
-Expr : '[' ']'                     { ENil }
+Coms : Coms ','  Coms              { EBin Cons ($1) ($3) }
+--     | Coms                        { EBin Cons ($1) ENil } 
+     | Comp                        { $1 }
 
-Expr : ID                          { EVar $1 }
-Expr : TNUM                        { EInt $1 }
-Expr : true                        { EBool True }
-Expr : false                       { EBool False }
+Comp : if Expr then Expr else Expr { EIf ($2) ($4) ($6) }
+     | Comp '==' Comp              { EBin Eq $1 $3 }
+     | Comp '/=' Comp              { EBin Ne $1 $3 }
+     | Comp '<'  Comp              { EBin Lt $1 $3 }
+     | Comp '<=' Comp              { EBin Le $1 $3 }
+     | Form                        { $1 }
 
-Expr : Expr '*' Expr               { EBin Mul $1 $3 }
-Expr : Expr '+' Expr               { EBin Plus $1 $3 }
-Expr : Expr '-' Expr               { EBin Minus $1 $3 }
-Expr : Expr '==' Expr              { EBin Eq $1 $3 }
-Expr : Expr '/=' Expr              { EBin Ne $1 $3 }
-Expr : Expr '<' Expr               { EBin Lt $1 $3 }
-Expr : Expr '<=' Expr              { EBin Le $1 $3 }
-Expr : Expr '&&' Expr              { EBin And $1 $3 }
-Expr : Expr '||' Expr              { EBin Or $1 $3 }
+Form : Form '||' Form              { EBin Or $1 $3 }
+     | Form '&&' Form              { EBin And $1 $3 }
+     | Form '+'  Form              { EBin Plus $1 $3 }
+     | Form '-'  Form              { EBin Minus $1 $3 }
+     | Form '*'  Form              { EBin Mul $1 $3 }
+     | '[' ']'                     { ENil }
+     | Fact                        { $1 }
 
-Expr : Expr ',' Expr              { EBin Cons ($1) ($3) }
---Expr2 : Expr ',' Expr           { EBin Cons ($1) ($3) }
---      | Expr                    { EBin Cons ($1) ENil }  
+Fact : Fact Unit                   { EApp ($1) ($2) }
+     | Unit                        { $1 }
 
-Expr : Expr ':' Expr               { EBin Cons ($1) $3 }
---Expr3 : Expr ':' Expr           { EBin Cons ($1) ($3) }
---      | Expr                       { EBin Cons ($1) ENil } 
+Unit : '[' Expr ']'                { $2 }
+     | '(' Expr ')'                { $2 }
+     | TNUM                        { EInt $1 }
+     | ID                          { EVar $1 }
+     | true                        { EBool True }
+     | false                       { EBool False }
+ 
+
+
+
 
 
 {

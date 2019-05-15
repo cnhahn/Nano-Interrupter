@@ -195,9 +195,14 @@ eval [] (ELet id expr1 expr2) = eval (env') expr2
      where
        env' = [(id, (eval [] expr1))]
 
+--eval env (ELet id expr1 expr2) = eval (env' ++ env) expr2
+--     where
+--       env' = [(id, (eval env expr1))]
+
 eval env (ELet id expr1 expr2) = eval (env' ++ env) expr2
      where
        env' = [(id, (eval env expr1))]
+
 
 -------------------------------------------------------------------------------
 --eval []  (ELam id _)              = throw (Error ("unbound variable: " ++ id))
@@ -211,7 +216,7 @@ eval env (ELam id expr)           = (VClos env id expr)
      
 eval env (EApp a b) = case (eval env a) of
      VClos env' id e -> eval ( [(id, (eval env b))] ++ env' ) e 
-     _ ->  throw (Error ("Error in EApp: "))
+     _ ->  throw (Error ("type error"))
 
 
 --------------------------------------------------------------------------------
