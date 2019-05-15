@@ -70,11 +70,8 @@ Top  : ID '=' Expr                 { $3 }
 Expr : let ID '=' Expr in Expr     { ELet $2 ($4) ($6)}
      | '\\' ID '->' Expr           { ELam $2 ($4) }
      | Expr ':'  Expr              { EBin Cons ($1) $3 }
-     | Coms                        { $1 }
+     | Comps                       { $1 }
 
-Coms : Coms ','  Coms              { EBin Cons ($1) ($3) }
---     | Coms                        { EBin Cons ($1) ENil } 
-     | Comps                        { $1 }
 
 Comps : Comps '||' Comps           { EBin Or $1 $3 }
       | Comps '&&' Comps           { EBin And $1 $3 } 
@@ -98,13 +95,17 @@ Muli : Muli '*'  Muli              { EBin Mul $1 $3 }
 Fact : Fact Unit                   { EApp ($1) ($2) }
      | Unit                        { $1 }
 
-Unit : '[' Expr ']'                { $2 }
+Unit : '[' Commas ']'                { $2 }
      | '(' Expr ')'                { $2 }
      | TNUM                        { EInt $1 }
      | ID                          { EVar $1 }
      | true                        { EBool True }
      | false                       { EBool False }
- 
+
+
+Commas : Top ','  Commas             { EBin Cons ($1) ($3) }
+       | Top                         { EBin Cons ($1) ENil } 
+     
 
 
 
