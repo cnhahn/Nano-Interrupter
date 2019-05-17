@@ -188,24 +188,20 @@ eval env (EBin Cons expr1 expr2)  = evalOp Cons (eval env expr1) (eval env expr2
 eval env (EIf expr1 expr2 expr3) 
    | (((eval env expr1)) == ((eval env (EBool True)))) = (eval env expr2)
    | (((eval env expr1)) == ((eval env (EBool False)))) = (eval env expr3)
-   | otherwise = VErr( throw (Error ("type error ELet")) )
+   | otherwise = VErr( throw (Error ("type error EIf")) )
 
 ------------------------------------------------------------------------------- 
 
 --eval env (ELet id expr1 expr2) = eval (env' ++ env) expr2
 --     where
---       env' = [(id, (eval env expr1))]
+--      ` env' = [(id, (eval env expr1))]
 
+--let blank = blank
+--env dosent include 
+--let env including id env and e2
 
- 
-
-eval env (ELet id expr1 expr2) = eval (env') expr2
-     where
-       eval' = eval env expr1
-       env' = [(id, eval')] ++ env
-
-
-
+eval env (ELet id expr1 expr2) = let env' = ([(id, (eval env' expr1))] ++ env) in eval env' expr2
+     
 -------------------------------------------------------------------------------
 eval env (ELam id expr)           = (VClos env id expr)
 
@@ -217,7 +213,8 @@ eval env (ELam id expr)           = (VClos env id expr)
 --     v = [(id , (arg + env'))] 
      
 eval env (EApp a b) = case (eval env a) of
-     VClos env' id e -> eval ( [(id, (eval env b))] ++ env' ) e 
+     VClos env' id e -> eval ( [(id, (eval env b))] ++ env' ) e
+     VPrim f -> f (eval env b) 
      _ -> VErr( throw (Error ("type error EApp")) )
 
 
@@ -242,7 +239,23 @@ evalOp Div _ _                           = VErr( throw (Error ("type error: bino
 
 evalOp Eq (VInt value1)  (VInt value2)   = (VBool (value1 == value2))
 evalOp Eq (VBool value1) (VBool value2)  = (VBool (value1 == value2))
+evalOp Eq (VNil) (VNil)                  = (VBool True)
+evalOp Eq (VNil) _                  = (VBool False)
+evalOp Eq  _ (VNil)                 = (VBool False)
+evalOp Eq (VPair value1 value2) (VPair value3 value4)  
+                          = case ((evalOp Eq value1 value3), (evalOp Eq value2 value4)) of  
+                          (VBool True, VBool True) -> (VBool True)     
+                          (VBool _, VBool _) -> (VBool False)
+                          (VBool _, VNil) -> (VBool False)
+                          (VNil, VBool _) -> (VBool False)
+                          (VInt _, VNil) -> (VBool False)
+                          (VNil, VInt _) -> (VBool False)
+                          (VNil, VNil) -> (VBool True)
+                          _ -> VErr( throw (Error ("type error: binop")) )
+                                   
 evalOp Eq _ _                            = VErr( throw (Error ("type error: binop")) )
+
+--recurrsions if they are are the two remaining list equavlent.
 
 evalOp Ne (VInt value1)  (VInt value2)   = (VBool (value1 /= value2))
 evalOp Ne (VBool value1) (VBool value2)  = (VBool (value1 /= value2))
@@ -266,7 +279,7 @@ evalOp Cons _ _                          = VErr( throw (Error ("type error: bino
 
 -- more than one case errors maybe thrown 
 
---evalOp Cons value1 value2 = (VPair(value1 Cons value2)) more than one case errors maybe thrown
+-- evalOp Cons value1 value2 = (VPair(value1 Cons value2)) more than one case errors maybe thrown
 
 --------------------------------------------------------------------------------
 -- | `lookupId x env` returns the most recent
@@ -294,6 +307,20 @@ prelude :: Env
 prelude =
   [ -- HINT: you may extend this "built-in" environment
     -- with some "operators" that you find useful...
+   ("head", VPrim(\x -> case x of
+                        VPair z r -> z
+                        _ -> VErr( throw (Error ("type error:prelude")) )
+                  ) 
+   ),
+   
+   ("tail", VPrim(\x -> case x of
+                        VPair z r -> r
+                        _ -> VErr( throw (Error ("type error:prelude")) )
+                  ) 
+   )
+   
+    
+   
   ]
 
 env0 :: Env
