@@ -67,18 +67,22 @@ import Control.Exception
 Top  : ID '=' Expr                 { $3 }
      | Expr                        { $1 }
 
-Expr : let ID '=' Expr in Expr     { ELet $2 ($4) ($6)}
+Expr : let ID '=' Expr in Expr     { ELet $2 ($4) ($6) }
+     | let ID MID '=' Expr in Expr { ELet $2 ($3 $5) ($7)}
      | '\\' ID '->' Expr           { ELam $2 ($4) }
      | Expr ':'  Expr              { EBin Cons ($1) $3 }
-     | Comps                       { $1 }
+     | if Expr then Expr else Expr { EIf ($2) ($4) ($6) }
+     | Ors                         { $1 }
 
 
-Comps : Comps '||' Comps           { EBin Or $1 $3 }
-      | Comps '&&' Comps           { EBin And $1 $3 } 
-      | Comp                       { $1 }
+Ors : Ors '||' Ors                 { EBin Or $1 $3 }
+    | Ands                         { $1 }    
 
-Comp : if Expr then Expr else Expr { EIf ($2) ($4) ($6) }
-     | Comp '==' Comp              { EBin Eq $1 $3 }
+Ands : Ands '&&' Ands              { EBin And $1 $3 } 
+     | Comp                        { $1 }
+
+
+Comp : Comp '==' Comp              { EBin Eq $1 $3 }
      | Comp '/=' Comp              { EBin Ne $1 $3 }
      | Comp '<'  Comp              { EBin Lt $1 $3 }
      | Comp '<=' Comp              { EBin Le $1 $3 }
@@ -95,7 +99,7 @@ Muli : Muli '*'  Muli              { EBin Mul $1 $3 }
 Fact : Fact Unit                   { EApp ($1) ($2) }
      | Unit                        { $1 }
 
-Unit : '[' Commas ']'                { $2 }
+Unit : '[' Commas ']'              { $2 }
      | '(' Expr ')'                { $2 }
      | TNUM                        { EInt $1 }
      | ID                          { EVar $1 }
@@ -103,10 +107,11 @@ Unit : '[' Commas ']'                { $2 }
      | false                       { EBool False }
 
 
-Commas : Top ','  Commas             { EBin Cons ($1) ($3) }
-       | Top                         { EBin Cons ($1) ENil } 
+Commas : Expr ','  Commas             { EBin Cons ($1) ($3) }
+       | Expr                         { EBin Cons ($1) ENil } 
      
-
+MID   : ID  MID                 { \x -> ELam $1 ($2 x) }
+      | ID                      { \x -> ELam $1 x } 
 
 
 
