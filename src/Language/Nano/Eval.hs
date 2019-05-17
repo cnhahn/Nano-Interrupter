@@ -192,15 +192,15 @@ eval env (EIf expr1 expr2 expr3)
 
 ------------------------------------------------------------------------------- 
 
---eval env (ELet id expr1 expr2) = eval (env' ++ env) expr2
---     where
---      ` env' = [(id, (eval env expr1))]
+eval env (ELet id expr1 expr2) = eval (env') expr2
+     where
+       env' = [(id, (eval env' expr1))] ++ env
 
 --let blank = blank
 --env dosent include 
 --let env including id env and e2
 
-eval env (ELet id expr1 expr2) = let env' = ([(id, (eval env' expr1))] ++ env) in eval env' expr2
+--eval env (ELet id expr1 expr2) = let env' = ([(id, (eval env' expr1))] ++ env) in eval env' expr2
      
 -------------------------------------------------------------------------------
 eval env (ELam id expr)           = (VClos env id expr)
