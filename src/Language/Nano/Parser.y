@@ -70,6 +70,7 @@ Top  : ID '=' Expr                 { $3 }
 Expr : let ID '=' Expr in Expr     { ELet $2 ($4) ($6) }
      | let ID MID '=' Expr in Expr { ELet $2 ($3 $5) ($7)}
      | '\\' ID '->' Expr           { ELam $2 ($4) }
+     | '\\' ID LMID '->' Expr      { ELam $2 ($3 $5) }
      | Expr ':'  Expr              { EBin Cons ($1) $3 }
      | if Expr then Expr else Expr { EIf ($2) ($4) ($6) }
      | Ors                         { $1 }
@@ -88,8 +89,8 @@ Comp : Comp '==' Comp              { EBin Eq $1 $3 }
      | Comp '<=' Comp              { EBin Le $1 $3 }
      | Form                        { $1 }
 
-Form : Form '+'  Form              { EBin Plus $1 $3 }
-     | Form '-'  Form              { EBin Minus $1 $3 }
+Form : Form '+' Form               { EBin Plus $1 $3 }
+     | Form '-' Form               { EBin Minus $1 $3 }
      | '[' ']'                     { ENil }
      | Muli                        { $1 }
 
@@ -107,14 +108,14 @@ Unit : '[' Commas ']'              { $2 }
      | false                       { EBool False }
 
 
-Commas : Expr ','  Commas             { EBin Cons ($1) ($3) }
-       | Expr                         { EBin Cons ($1) ENil } 
+Commas : Expr ','  Commas          { EBin Cons ($1) ($3) }
+       | Expr                      { EBin Cons ($1) ENil } 
      
-MID   : ID  MID                 { \x -> ELam $1 ($2 x) }
-      | ID                      { \x -> ELam $1 x } 
-
-
-
+MID   : ID  MID                    { \x -> ELam $1 ($2 x) }
+      | ID                         { \x -> ELam $1 x } 
+   
+LMID  : ID MID                     { \x -> ELam $1 ($2 x) }
+      | ID                         { \x -> ELam $1 x } 
 
 {
 mkLam :: [Id] -> Expr -> Expr
