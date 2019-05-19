@@ -75,13 +75,11 @@ Expr : let ID '=' Expr in Expr     { ELet $2 ($4) ($6) }
      | if Expr then Expr else Expr { EIf ($2) ($4) ($6) }
      | Ors                         { $1 }
 
-
 Ors : Ors '||' Ors                 { EBin Or $1 $3 }
     | Ands                         { $1 }    
 
 Ands : Ands '&&' Ands              { EBin And $1 $3 } 
      | Comp                        { $1 }
-
 
 Comp : Comp '==' Comp              { EBin Eq $1 $3 }
      | Comp '/=' Comp              { EBin Ne $1 $3 }
@@ -100,7 +98,8 @@ Muli : Muli '*'  Muli              { EBin Mul $1 $3 }
 Fact : Fact Unit                   { EApp ($1) ($2) }
      | Unit                        { $1 }
 
-Unit : '[' Commas ']'              { $2 }
+Unit : '[' Expr ']'                { $2 }
+     | '[' Commas ']'              { $2 }
      | '(' Expr ')'                { $2 }
      | TNUM                        { EInt $1 }
      | ID                          { EVar $1 }
