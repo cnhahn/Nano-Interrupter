@@ -259,6 +259,18 @@ evalOp Eq _ _                            = VErr( throw (Error ("type error: bino
 
 evalOp Ne (VInt value1)  (VInt value2)   = (VBool (value1 /= value2))
 evalOp Ne (VBool value1) (VBool value2)  = (VBool (value1 /= value2))
+--might need to check the logic for these case but here is a bare bone templet for it.
+evalOp Ne (VPair value1 value2) (VPair value3 value4)  
+                          = case ((evalOp Ne value1 value3), (evalOp Ne value2 value4)) of  
+                          (VBool True, VBool True) -> (VBool True)     
+                          (VBool _, VBool _) -> (VBool False)
+                          (VBool _, VNil) -> (VBool False)
+                          (VNil, VBool _) -> (VBool False)
+                          (VInt _, VNil) -> (VBool False)
+                          (VNil, VInt _) -> (VBool False)
+                          (VNil, VNil) -> (VBool True)
+                          _ -> VErr( throw (Error ("type error: binop")) )
+                                   
 evalOp Ne _ _                            = VErr( throw (Error ("type error: binop")) )
 
 evalOp Lt (VInt value1) (VInt value2)    = (VBool (value1 < value2))
@@ -275,6 +287,16 @@ evalOp Or _ _                            = VErr( throw (Error ("type error: bino
 
 evalOp Cons (x) (VNil)                   = (VPair x (VNil))
 evalOp Cons (x) (VPair a b)              = (VPair x (VPair a b))
+
+--evalOp Cons (VNil) (VNil)                = (VPair (VNil) (VNil))
+--evalOp Cons (VInt x) (VNil)              = (VPair (VInt x) (VNil))
+--evalOp Cons (VNil) (VInt x)              = (VPair (VNil) (VInt x))
+--evalOp Cons (VBool x) (VNil)             = (VPair (VInt x) (VNil))
+--evalOp Cons (VNil) (VBool x)             = (VPair (VNil) (VInt x))
+--
+--evalOp Cons (VInt x) (VPair (VInt a) (VInt b))         = (VPair (VInt x) (VPair (VInt a) (VInt b)))
+--evalOp Cons (VNil) (VInt x)              = (VPair (VNil) (VInt x))
+
 evalOp Cons _ _                          = VErr( throw (Error ("type error: binop")) )
 
 -- more than one case errors maybe thrown 
