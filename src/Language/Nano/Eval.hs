@@ -283,9 +283,13 @@ evalOp And _ _                           = VErr( throw (Error ("type error: bino
 evalOp Or (VBool value1) (VBool value2)  = (VBool (value1 || value2))
 evalOp Or _ _                            = VErr( throw (Error ("type error: binop")) )
 
+
+
 evalOp Cons (x) (VNil)                   = (VPair x (VNil))
 evalOp Cons (x) (VPair a b)              = (VPair x (VPair a b))
+
 evalOp Cons _ _                          = VErr( throw (Error ("type error: binop")) )
+
 
 -- more than one case errors maybe thrown 
 
