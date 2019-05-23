@@ -235,6 +235,7 @@ evalOp Mul (VInt value1)  (VInt value2)  = (VInt (value1 * value2))
 evalOp Mul _ _                           = VErr( throw (Error ("type error: binop")) )
 
 evalOp Div (VInt value1) (VInt value2)   = (VInt (div value1 value2))
+evalOp Div (VInt _) (VInt 0)             = VErr( throw (Error ("type error: binop")) )
 evalOp Div _ _                           = VErr( throw (Error ("type error: binop")) )
 
 evalOp Eq (VInt value1)  (VInt value2)   = (VBool (value1 == value2))
