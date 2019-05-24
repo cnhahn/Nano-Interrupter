@@ -98,8 +98,7 @@ Muli : Muli '*'  Muli              { EBin Mul $1 $3 }
 Fact : Fact Unit                   { EApp ($1) ($2) }
      | Unit                        { $1 }
 
-Unit : '[' Expr ']'                { $2 }
-     | '[' Commas ']'              { $2 }
+Unit : '[' Commas ']'              { $2 }
      | '(' Expr ')'                { $2 }
      | TNUM                        { EInt $1 }
      | ID                          { EVar $1 }
