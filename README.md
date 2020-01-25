@@ -1,11 +1,6 @@
-# Assignment 4: Nano (270 points)
-
-## Due by Monday 5/13, 11:59 PM
-
-
 ## Overview
 
-The overall objective of this assignment is to
+The overall objective of this project is to
 fully understand the notions of
 
 * lexing,
@@ -20,7 +15,7 @@ No individual function requires more than 15-25
 lines, so if you're answer is longer, you can be sure
 that you need to rethink your solution.
 
-The assignment is in the files:
+The project is in the files:
 
 1. [Lexer.x][/src/Language/Nano/Lexer.x]
 2. [Parser.y][/src/Language/Nano/Parser.y]
@@ -30,7 +25,7 @@ and
 
 + [tests/Test.hs](/tests/Test.hs) has some sample tests,
   and testing code that you will use to check your
-  assignments before submitting.
+  projects before submitting.
 
 You should only need to modify the parts of the files which say:
 
@@ -44,7 +39,7 @@ with suitable Haskell implementations.
 take a while to grok.
 
 
-## Assignment Testing and Evaluation
+## Project Testing and Evaluation
 
 Most of the points, will be awarded automatically, by
 **evaluating your functions against a given test suite**.
@@ -87,7 +82,7 @@ To submit your code, push your code to gitlab and turn in the commit ID on canva
 
 ## Data Structures and Overview
 
-In this assignment, you will build an interpreter
+In this project, you will build an interpreter
 for a subset of Haskell called *Nano*. The following
 data types (in `Types.hs`) are used to represent the
 different elements of the language.
@@ -224,11 +219,11 @@ Intuitively, the Nano integer value `4` and boolean value
    and body-expression `e` that was defined in an environment
    `env`.
 
-## Problem 1: Nano Interpreter (Eval.hs)
+## Part 1: Nano Interpreter (Eval.hs)
 
 In this problem, you will implement an interpreter for Nano.
 
-### (a) 25 points
+### (a) 
 
 
 First consider the (restricted subsets of) types described below:
@@ -308,7 +303,7 @@ recompiled, you should get the following behavior:
 *** Exception: Error {errMsg = "unbound variable: p"}
 ```
 
-### (b) 20 points
+### (b) 
 
 Next, add support for the binary operators
 
@@ -381,7 +376,7 @@ True
 False
 ```
 
-### (c) 25 points
+### (c) 
 
 Now consider the extended the types as shown below which includes
 the *let-in* expressions which introduce local bindings.
@@ -405,7 +400,7 @@ recompiled, you should get the following behavior:
 3
 ```
 
-### (d)  25 points
+### (d)  
 
 Next, extend the evaluator so it includes the expressions
 corresponding to function definitions and applications.
@@ -459,7 +454,7 @@ recompiled, you should get the following behavior:
 102
 ```
 
-### (e) 30 points
+### (e) 
 
 Make the above work for recursively defined functions.
 Once you have implemented this functionality, you should
@@ -476,7 +471,7 @@ get the following behavior:
 ```
 
 
-### (f) 40 points
+### (f)
 
 Finally, extend your program to support operations on lists.
 
@@ -512,7 +507,7 @@ following behavior
 ```
 The constructor `VPrim` will come in handy here.
 
-## Problem 2: Nano Lexer (Lexer.x) and Parser (Parser.y)
+## Part 2: Nano Lexer (Lexer.x) and Parser (Parser.y)
 
 The goal of this problem is to write a **lexer** and **parser**
 for Nano using the tools `Alex` and `Happy`. (Google those terms
@@ -520,7 +515,7 @@ for more information about them.) In each subproblem, we will
 increase the complexity of the expressions parsed by your
 implementation.
 
-### (a) 15 points
+### (a)
 
 We will begin by making our parser recognize some of
 the simplest Nano expressions: constants and variables.
@@ -581,7 +576,7 @@ EInt 123
 EVar "foo"
 ```
 
-### (b) 15 points
+### (b) 
 
 Add the following tokens to the lexer and parser.
 
@@ -629,7 +624,7 @@ ELet "foo" (ELam "x" (EIf (EVar "y") (EVar "z") (EVar "w"))) (EVar "foo")
 ELet "foo" (ELam "x" (EIf (EVar "y") (EVar "z") (EVar "w"))) (EVar "foo")
 ````
 
-### (c) 15 points
+### (c) 
 
 Add the following tokens to the lexer and parser.
 
@@ -677,7 +672,7 @@ EIf (EBin Le (EInt 4) (EVar "z")) (EBin Minus (EInt 1) (EVar "z")) (EBin Mul (EI
 ELet "a" (EBin Mul (EInt 6) (EInt 2)) (EBin Ne (EVar "a") (EInt 11))
 ```
 
-### (d) 10 points
+### (d) 
 
 Add the following tokens to the lexer and parser.
 
@@ -718,7 +713,7 @@ ELet "z" (EInt 3) (ELet "y" (EInt 2) (ELet "x" (EInt 1) (ELet "z1" (EInt 0) (EBi
 
 ```
 
-### (d) 35 points
+### (d) 
 
 Restructure your parser to give binary operators the
 following precedence and associativity.  This will
@@ -756,7 +751,7 @@ EBin Minus (EBin Minus (EInt 1) (EInt 2)) (EInt 3)
 EBin Or (EBin And (EBin Plus (EInt 1) (EVar "a")) (EVar "b")) (EBin Minus (EBin Minus (EBin Plus (EVar "c") (EBin Mul (EVar "d") (EVar "e"))) (EVar "f")) (EApp (EVar "g") (EVar "x")))
 ```
 
-### (e) 15 points
+### (e) 
 
 Add the following tokens to the lexer and parser.
 
